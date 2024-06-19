@@ -18,7 +18,7 @@ RCT_REMAP_METHOD(getIcon, resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCT
     });
 }
 
-RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName options:(NSDictionary *)options resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
+RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     dispatch_async(dispatch_get_main_queue(), ^{
       
         // bool useUnsafeSuppressAlert = [[options objectForKey: @"useUnsafeSuppressAlert"] boolValue];
