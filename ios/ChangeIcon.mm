@@ -13,7 +13,7 @@ RCT_REMAP_METHOD(getIcon, resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCT
         if (currentIcon) {
             resolve(currentIcon);
         } else {
-            resolve(@"Default");
+            resolve(@"standard");
         }
     });
 }
@@ -40,7 +40,7 @@ RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName resolver:(RCTPromiseR
         NSString *newIconName;
         if (iconName == nil || [iconName length] == 0 || [iconName isEqualToString:@"Default"]) {
             newIconName = nil;
-            resolve(@"Default");
+            resolve(@"standard");
         } else {
             newIconName = iconName;
             resolve(newIconName);
