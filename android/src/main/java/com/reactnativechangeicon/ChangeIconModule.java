@@ -64,7 +64,7 @@ public class ChangeIconModule extends ReactContextBaseJavaModule implements Appl
             return;
         }
         if (this.componentClass.isEmpty()) {
-            this.componentClass = activityName.endsWith("MainActivity") ? ".standard" : activityName;
+            this.componentClass = activityName.endsWith("MainActivity") ? this.packageName + ".standard" : activityName;
         }
 
         final String newIconName = (iconName == null || iconName.isEmpty()) ? "standard" : iconName;
@@ -97,10 +97,17 @@ public class ChangeIconModule extends ReactContextBaseJavaModule implements Appl
             return;
         
         classesToKill.remove(componentClass);
-        classesToKill.forEach((cls) -> activity.getPackageManager().setComponentEnabledSetting(
-                new ComponentName(this.packageName, cls),
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
-                PackageManager.DONT_KILL_APP));
+        for (String cls : classesToKill) {
+            try {
+                activity.getPackageManager().setComponentEnabledSetting(
+                    new ComponentName(this.packageName, cls),
+                    PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+                    PackageManager.DONT_KILL_APP);
+            } catch(Exception e) {
+                
+            }
+        }
+        
         classesToKill.clear();
         iconChanged = false;
     }
