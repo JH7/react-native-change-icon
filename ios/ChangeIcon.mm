@@ -20,6 +20,7 @@ RCT_REMAP_METHOD(getIcon, resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCT
 
 RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     dispatch_async(dispatch_get_main_queue(), ^{
+        NSString *iconNameTogether = [@"icon-" stringByAppendingString:iconName];
       
         // bool useUnsafeSuppressAlert = [[options objectForKey: @"useUnsafeSuppressAlert"] boolValue];
         bool useUnsafeSuppressAlert = true;
@@ -32,7 +33,7 @@ RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName resolver:(RCTPromiseR
 
         NSString *currentIcon = [[UIApplication sharedApplication] alternateIconName];
 
-        if ([iconName isEqualToString:currentIcon]) {
+        if ([iconNameTogether isEqualToString:currentIcon]) {
             reject(@"Error", @"IOS:ICON_ALREADY_USED", error);
             return;
         }
@@ -42,7 +43,7 @@ RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName resolver:(RCTPromiseR
             newIconName = nil;
             resolve(@"standard");
         } else {
-            newIconName = iconName;
+            newIconName = iconNameTogether;
             resolve(newIconName);
         }
         
@@ -53,7 +54,7 @@ RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName resolver:(RCTPromiseR
                 SEL selector = NSSelectorFromString(selectorString);
                 IMP imp = [[UIApplication sharedApplication] methodForSelector:selector];
                 setAlternateIconName method = (setAlternateIconName)imp;
-                method([UIApplication sharedApplication], selector, iconName, ^(NSError *error) {});
+                method([UIApplication sharedApplication], selector, iconNameTogether, ^(NSError *error) {});
             }
             @catch (NSException *exception) {
               // fallback on safe method
