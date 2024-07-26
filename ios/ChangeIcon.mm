@@ -9,8 +9,10 @@ RCT_EXPORT_MODULE()
 
 RCT_REMAP_METHOD(getIcon, resolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
     dispatch_async(dispatch_get_main_queue(), ^{
-        NSString *currentIcon = [[UIApplication sharedApplication] alternateIconName];
-        if (currentIcon) {
+        NSString *currentIconName = [[UIApplication sharedApplication] alternateIconName];
+        if (currentIconName) {
+            NSString *currentIcon = [currentIconName stringByReplacingOccurrencesOfString:@"icon-" withString:@""];
+
             resolve(currentIcon);
         } else {
             resolve(@"standard");
