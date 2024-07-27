@@ -43,10 +43,8 @@ RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName resolver:(RCTPromiseR
         NSString *newIconName;
         if (iconName == nil || [iconName length] == 0 || [iconName isEqualToString:@"Default"]) {
             newIconName = nil;
-            resolve(@"standard");
         } else {
             newIconName = iconNameTogether;
-            resolve(newIconName);
         }
         
         if (useUnsafeSuppressAlert == true) {
@@ -56,17 +54,31 @@ RCT_REMAP_METHOD(changeIcon, iconName:(NSString *)iconName resolver:(RCTPromiseR
                 SEL selector = NSSelectorFromString(selectorString);
                 IMP imp = [[UIApplication sharedApplication] methodForSelector:selector];
                 setAlternateIconName method = (setAlternateIconName)imp;
-                method([UIApplication sharedApplication], selector, iconNameTogether, ^(NSError *error) {});
+                method([UIApplication sharedApplication], selector, newIconName, ^(NSError *error) {
+                    if (error != nil) {
+                        reject(@"Error", @"IOS:UNSAFE_ERROR", error);
+                    } else {
+                        resolve(newIconName);
+                    }
+                });
             }
             @catch (NSException *exception) {
               // fallback on safe method
               [[UIApplication sharedApplication] setAlternateIconName:newIconName completionHandler:^(NSError * _Nullable error) {
-                return;
+                if (error != nil) {
+                    reject(@"Error", @"IOS:SAFE_ERROR", error);
+                } else {
+                    resolve(newIconName);
+                }
               }];
             }
         } else {
           [[UIApplication sharedApplication] setAlternateIconName:newIconName completionHandler:^(NSError * _Nullable error) {
-              return;
+              if (error != nil) {
+                    reject(@"Error", @"IOS:ERROR", error);
+                } else {
+                    resolve(newIconName);
+                }
           }];
         }
         
