@@ -8,4 +8,4 @@ export interface Spec extends TurboModule {
     getIcon: () => Promise<string>;
 }
 
-export default TurboModuleRegistry.get<Spec>('ChangeIcon');
+export default TurboModuleRegistry.getEnforcing<Spec>('ChangeIcon');
