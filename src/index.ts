@@ -1,5 +1,11 @@
-import { NativeModules } from "react-native";
+import type { TurboModule } from 'react-native';
+import { TurboModuleRegistry } from 'react-native';
 
-export const changeIcon = (iconName?: string): Promise<string> => NativeModules.ChangeIcon.changeIcon(iconName);
-export const resetIcon = () => changeIcon();
-export const getIcon = (): Promise<string> => NativeModules.ChangeIcon.getIcon();
+export interface Spec extends TurboModule {
+    readonly getConstants: () => {};
+    changeIcon: (iconName?: string) => Promise<string>;
+    resetIcon: () => Promise<string>;
+    getIcon: () => Promise<string>;
+}
+
+export default TurboModuleRegistry.get<Spec>('ChangeIcon');

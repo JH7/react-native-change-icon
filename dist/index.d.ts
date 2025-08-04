@@ -1,3 +1,9 @@
-export declare const changeIcon: (iconName?: string) => Promise<string>;
-export declare const resetIcon: () => Promise<string>;
-export declare const getIcon: () => Promise<string>;
+import type { TurboModule } from 'react-native';
+export interface Spec extends TurboModule {
+    readonly getConstants: () => {};
+    changeIcon: (iconName?: string) => Promise<string>;
+    resetIcon: () => Promise<string>;
+    getIcon: () => Promise<string>;
+}
+declare const _default: Spec | null;
+export default _default;
