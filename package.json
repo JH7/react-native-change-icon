@@ -42,11 +42,11 @@
     "react-native": "*"
   },
   "codegenConfig": {
-    "name": "RNChangeIconSpec",
-    "type": "all",
-    "jsSrcsDir": ".",
+    "name": "NativeChangeIconSpec",
+    "type": "modules",
+    "jsSrcsDir": "src",
     "android": {
-      "javaPackageName": "com.facebook.fbreact.specs"
+      "javaPackageName": "com.reactnativechangeicon"
     }
   }
 }
