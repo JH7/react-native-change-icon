@@ -14,7 +14,8 @@
     "NativeChangeIcon.ts",
     "react-native-change-icon.podspec",
     "react-native.config.js",
-    "README.md"
+    "README.md",
+    "src/**/*"
   ],
   "scripts": {
     "build": "tsc"
