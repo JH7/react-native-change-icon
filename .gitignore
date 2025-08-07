@@ -15,3 +15,5 @@ yarn-error.log
 local.properties
 .idea/
 .gradle/
+
+android/build

@@ -10,24 +10,26 @@ import android.os.Bundle;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.module.annotations.ReactModule;
+
+// New Architecture
+import com.reactnativechangeicon.NativeChangeIconSpec;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@ReactModule(name = "ChangeIcon")
-public class ChangeIconModule extends ReactContextBaseJavaModule implements Application.ActivityLifecycleCallbacks {
+@ReactModule(name = ChangeIconModule.NAME)
+public class ChangeIconModule extends NativeChangeIconSpec implements Application.ActivityLifecycleCallbacks {
     public static final String NAME = "ChangeIcon";
     private final String packageName;
     private final Set<String> classesToKill = new HashSet<>();
     private Boolean iconChanged = false;
     private String componentClass = "";
 
-    public ChangeIconModule(ReactApplicationContext reactContext, String packageName) {
+    public ChangeIconModule(ReactApplicationContext reactContext) {
         super(reactContext);
-        this.packageName = packageName;
+        this.packageName = reactContext.getPackageName();
     }
 
     @Override
@@ -37,10 +39,11 @@ public class ChangeIconModule extends ReactContextBaseJavaModule implements Appl
     }
 
     @ReactMethod
+    @Override
     public void getIcon(Promise promise) {
         final Activity activity = getCurrentActivity();
         if (activity == null) {
-            promise.reject("ANDROID:ACTIVITY_NOT_FOUND");
+            promise.reject("ANDROID:ACTIVITY_NOT_FOUND", "Activity not found");
             return;
         }
 
@@ -52,17 +55,18 @@ public class ChangeIconModule extends ReactContextBaseJavaModule implements Appl
         }
         String[] activityNameSplit = activityName.split("\\.");
         promise.resolve(activityNameSplit[activityNameSplit.length - 1]);
-        return;
     }
 
     @ReactMethod
+    @Override
     public void changeIcon(String iconName, Promise promise) {
         final Activity activity = getCurrentActivity();
-        final String activityName = activity.getComponentName().getClassName();
         if (activity == null) {
-            promise.reject("ANDROID:ACTIVITY_NOT_FOUND");
+            promise.reject("ANDROID:ACTIVITY_NOT_FOUND", "Activity not found");
             return;
         }
+        
+        final String activityName = activity.getComponentName().getClassName();
         if (this.componentClass.isEmpty()) {
             this.componentClass = activityName.endsWith("MainActivity") ? this.packageName + ".standard" : activityName;
         }
@@ -70,7 +74,7 @@ public class ChangeIconModule extends ReactContextBaseJavaModule implements Appl
         final String newIconName = (iconName == null || iconName.isEmpty()) ? "standard" : iconName;
         final String activeClass = this.packageName + "." + newIconName;
         if (this.componentClass.equals(activeClass)) {
-            promise.reject("ANDROID:ICON_ALREADY_USED:" + this.componentClass);
+            promise.reject("ANDROID:ICON_ALREADY_USED", "Icon already in use: " + this.componentClass);
             return;
         }
         try {
@@ -80,7 +84,7 @@ public class ChangeIconModule extends ReactContextBaseJavaModule implements Appl
                     PackageManager.DONT_KILL_APP);
             promise.resolve(newIconName);
         } catch (Exception e) {
-            promise.reject("ANDROID:ICON_INVALID");
+            promise.reject("ANDROID:ICON_INVALID", "Invalid icon name", e);
             return;
         }
         this.classesToKill.add(this.componentClass);
@@ -89,6 +93,13 @@ public class ChangeIconModule extends ReactContextBaseJavaModule implements Appl
         iconChanged = true;
     }
 
+    @ReactMethod
+    @Override
+    public void resetIcon(Promise promise) {
+        changeIcon(null, promise);
+    }
+
+    // ...existing lifecycle methods...
     private void completeIconChange() {
         if (!iconChanged)
             return;
