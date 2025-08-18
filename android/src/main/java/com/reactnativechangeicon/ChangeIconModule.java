@@ -99,7 +99,6 @@ public class ChangeIconModule extends NativeChangeIconSpec implements Applicatio
         changeIcon(null, promise);
     }
 
-    // ...existing lifecycle methods...
     private void completeIconChange() {
         if (!iconChanged)
             return;
@@ -125,7 +124,6 @@ public class ChangeIconModule extends NativeChangeIconSpec implements Applicatio
 
     @Override
     public void onActivityPaused(Activity activity) {
-        completeIconChange();
     }
 
     @Override
@@ -142,6 +140,7 @@ public class ChangeIconModule extends NativeChangeIconSpec implements Applicatio
 
     @Override
     public void onActivityStopped(Activity activity) {
+        completeIconChange();
     }
 
     @Override
