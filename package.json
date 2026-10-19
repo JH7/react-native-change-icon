@@ -1,12 +1,15 @@
 {
   "name": "react-native-change-icon",
   "title": "React Native Change Icon",
-  "version": "6.0.1",
+  "version": "7.0.0",
   "description": "Change application icon programmatically in React-Native.",
   "main": "dist/NativeChangeIcon.js",
   "source": "src/NativeChangeIcon.ts",
   "react-native": "dist/NativeChangeIcon.js",
   "types": "dist/NativeChangeIcon.d.ts",
+  "bin": {
+    "change-icon-generate": "plugin/generate-icon.js"
+  },
   "files": [
     "android",
     "ios",
@@ -15,7 +18,9 @@
     "react-native-change-icon.podspec",
     "react-native.config.js",
     "README.md",
-    "src/**/*"
+    "src/**/*",
+    "app.plugin.js",
+    "plugin/**/*"
   ],
   "scripts": {
     "build": "tsc"
@@ -40,6 +45,7 @@
     "typescript": "^5.1.6"
   },
   "peerDependencies": {
+    "expo": "*",
     "react-native": "*"
   },
   "codegenConfig": {
@@ -48,6 +54,11 @@
     "jsSrcsDir": "src",
     "android": {
       "javaPackageName": "com.reactnativechangeicon"
+    }
+  },
+  "peerDependenciesMeta": {
+    "expo": {
+      "optional": true
     }
   }
 }

@@ -14,8 +14,6 @@
 
 - (void)changeIcon:(nonnull NSString *)iconName resolve:(nonnull RCTPromiseResolveBlock)resolve reject:(nonnull RCTPromiseRejectBlock)reject {
   dispatch_async(dispatch_get_main_queue(), ^{
-      NSString *iconNameTogether = iconName ? [@"icon-" stringByAppendingString:iconName] : nil;
-    
       bool useUnsafeSuppressAlert = true;
       NSError *error = nil;
 
@@ -24,20 +22,22 @@
           return;
       }
 
+      // Alternate icon names are the plain ids (e.g. "eng"), matching the
+      // names the config plugin registers. Older builds used "icon-<id>".
+      NSString *newIconName;
+      if (iconName == nil || [iconName length] == 0 || [iconName isEqualToString:@"Default"] || [iconName isEqualToString:@"standard"]) {
+          newIconName = nil;
+      } else {
+          newIconName = iconName;
+      }
+
       NSString *currentIcon = [[UIApplication sharedApplication] alternateIconName];
 
-      if ([iconNameTogether isEqualToString:currentIcon] || (iconNameTogether == nil && currentIcon == nil)) {
+      if ([newIconName isEqualToString:currentIcon] || (newIconName == nil && currentIcon == nil)) {
           reject(@"Error", @"IOS:ICON_ALREADY_USED", error);
           return;
       }
 
-      NSString *newIconName;
-      if (iconName == nil || [iconName length] == 0 || [iconName isEqualToString:@"Default"]) {
-          newIconName = nil;
-      } else {
-          newIconName = iconNameTogether;
-      }
-      
       if (useUnsafeSuppressAlert == true) {
           @try {
               typedef void (*setAlternateIconName)(NSObject *, SEL, NSString *, void (^)(NSError *));
@@ -78,8 +78,9 @@
   dispatch_async(dispatch_get_main_queue(), ^{
       NSString *currentIconName = [[UIApplication sharedApplication] alternateIconName];
       if (currentIconName) {
-          NSString *currentIcon = [currentIconName stringByReplacingOccurrencesOfString:@"icon-" withString:@""];
-          resolve(currentIcon);
+          // Returned unchanged: a legacy "icon-<id>" then no longer equals "<id>",
+          // so callers comparing getIcon() with the wanted id switch to the new name.
+          resolve(currentIconName);
       } else {
           resolve(@"standard");
       }
