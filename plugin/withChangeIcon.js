@@ -40,6 +40,7 @@ const ANDROID_RES = "app/src/main/res";
  * @typedef {{
  *   id: string,
  *   label: string,
+ *   aliases?: string[],
  *   ios?: string,
  *   android?: {
  *     foregroundImage?: string,
@@ -71,8 +72,29 @@ function normalizeOptions(options) {
     if (!icon.label) {
       throw new Error(`${pkg.name}: icon "${icon.id}" needs a label`);
     }
+    if (icon.aliases !== undefined && !Array.isArray(icon.aliases)) {
+      throw new Error(`${pkg.name}: aliases of "${icon.id}" must be an array`);
+    }
+    for (const alias of icon.aliases || []) {
+      if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(alias)) {
+        throw new Error(`${pkg.name}: invalid alias "${alias}" for "${icon.id}"`);
+      }
+    }
+  }
+  const names = icons.flatMap(iosIconNames);
+  const duplicate = names.find((name, i) => names.indexOf(name) !== i);
+  if (duplicate) {
+    throw new Error(`${pkg.name}: icon name "${duplicate}" is used twice`);
   }
   return { iconsDir: opts.iconsDir || "icons", icons };
+}
+
+// iOS keeps the alternate icon by name across app updates and shows the
+// primary icon if the new build no longer has that name. Aliases register an
+// icon again under names older builds used (e.g. "icon-eng"), so it survives
+// the update until the app switches to the id on its next launch.
+function iosIconNames(icon) {
+  return [icon.id, ...(icon.aliases || [])];
 }
 
 function exists(projectRoot, file) {
@@ -124,19 +146,22 @@ const withIosAlternateIcons = (config, options) => {
 
     if (mode === "composer") {
       for (const icon of icons) {
-        // Copied next to the main .icon/Images.xcassets, as Expo does for ios.icon.
-        const target = path.join(platformProjectRoot, projectName, `${icon.id}.icon`);
-        fs.rmSync(target, { recursive: true, force: true });
-        fs.cpSync(path.resolve(projectRoot, icon.resolved.src), target, {
-          recursive: true,
-        });
-        IOSConfig.XcodeUtils.addResourceFileToGroup({
-          filepath: `${projectName}/${icon.id}.icon`,
-          groupName: projectName,
-          project,
-          isBuildFile: true,
-          verbose: true,
-        });
+        // The asset name is the file name, so each alias needs its own copy.
+        for (const name of iosIconNames(icon)) {
+          // Copied next to the main .icon/Images.xcassets, as Expo does for ios.icon.
+          const target = path.join(platformProjectRoot, projectName, `${name}.icon`);
+          fs.rmSync(target, { recursive: true, force: true });
+          fs.cpSync(path.resolve(projectRoot, icon.resolved.src), target, {
+            recursive: true,
+          });
+          IOSConfig.XcodeUtils.addResourceFileToGroup({
+            filepath: `${projectName}/${name}.icon`,
+            groupName: projectName,
+            project,
+            isBuildFile: true,
+            verbose: true,
+          });
+        }
       }
 
       const [, target] = IOSConfig.Target.findNativeTargetByName(project, projectName);
@@ -144,7 +169,7 @@ const withIosAlternateIcons = (config, options) => {
         project,
         target.buildConfigurationList
       );
-      const names = `"${icons.map((icon) => icon.id).join(" ")}"`;
+      const names = `"${icons.flatMap(iosIconNames).join(" ")}"`;
       for (const [, buildConfig] of configurations) {
         if (buildConfig.buildSettings) {
           buildConfig.buildSettings.ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = names;
@@ -182,12 +207,14 @@ const withIosAlternateIcons = (config, options) => {
 
     const alternateIcons = {};
     for (const icon of icons) {
-      alternateIcons[icon.id] = {
-        UIPrerenderedIcon: true,
-        CFBundleIconFiles: icon.resolved.files.map((file) =>
-          path.basename(file, ".png")
-        ),
-      };
+      for (const name of iosIconNames(icon)) {
+        alternateIcons[name] = {
+          UIPrerenderedIcon: true,
+          CFBundleIconFiles: icon.resolved.files.map((file) =>
+            path.basename(file, ".png")
+          ),
+        };
+      }
     }
     config.modResults.CFBundleIcons = {
       ...config.modResults.CFBundleIcons,

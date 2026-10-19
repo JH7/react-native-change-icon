@@ -1,7 +1,7 @@
 {
   "name": "react-native-change-icon",
   "title": "React Native Change Icon",
-  "version": "7.0.0",
+  "version": "7.1.0",
   "description": "Change application icon programmatically in React-Native.",
   "main": "dist/NativeChangeIcon.js",
   "source": "src/NativeChangeIcon.ts",
