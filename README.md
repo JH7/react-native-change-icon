@@ -1,3 +1,58 @@
+## Fork: Expo config plugin with Icon Composer icons
+
+This fork (JH7) ships an Expo config plugin. Alternate icons support dark, tinted and clear
+appearances on iOS (Icon Composer `.icon`) and themed icons on Android 13+ (adaptive icon with a
+monochrome layer). The manual setup in the original README below is not needed with it.
+
+```js
+// app.config.ts
+plugins: [
+  [
+    "react-native-change-icon",
+    {
+      iconsDir: "icons", // default
+      icons: [
+        { id: "eng", label: "ENGEL Direkt" },
+        // per icon overrides, all optional:
+        // { id: "spl", label: "SaniPlus Direkt", ios: "./brand/spl.icon",
+        //   android: { foregroundImage, monochromeImage, backgroundColor, backgroundImage } },
+      ],
+    },
+  ],
+],
+```
+
+The plain array form (`["react-native-change-icon", [{ id, label }, ...]]`) works as well.
+
+Files per icon id in `iconsDir`:
+
+| Platform | Preferred                                                                 | Fallback (light only)              |
+| -------- | ------------------------------------------------------------------------- | ---------------------------------- |
+| iOS      | `<id>.icon` (Icon Composer)                                               | `<id>-{120,144,152,167}.png`       |
+| Android  | `<id>-android-foreground.png` (+ `<id>-android-monochrome.png`), 1024 px | `<id>.png`                         |
+
+- **iOS**: the `.icon` files are added to the app target and listed in
+  `ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES`; Xcode compiles them into the asset catalog
+  (including flattened fallbacks for iOS < 26) and generates `CFBundleAlternateIcons`. Needs
+  Xcode 26+. Use `.icon` for all icons or for none: mixing with PNG icons is rejected.
+- **Android**: each id becomes an `activity-alias` (`.<id>`, plus `.standard` for the main icon).
+  Adaptive icons get `mipmap-anydpi-v26/ic_launcher_<id>.xml`, per-density layers, and a flat
+  icon for Android 7. `backgroundColor` defaults to `#ffffff`.
+- The icon name passed to `changeIcon()` is the id (`changeIcon("eng")`), on both platforms.
+  `getIcon()` returns the active name unchanged; since 7.0 iOS no longer adds an `icon-` prefix,
+  so devices still on a legacy `icon-<id>` report that name and are switched by the next
+  `changeIcon("<id>")`.
+
+### Drafting icons from a flat logo
+
+`npx change-icon-generate <logo.png> --id <id> --out icons [--preview]` turns a logo on a white
+background into `<id>.icon` and the Android layers: white is cut out, dark mode inverts greys and
+lifts dark colours on a dark fill, tinted/clear and Android monochrome use a white silhouette.
+It needs ImageMagick 7; `--preview` renders every appearance with Xcode's `ictool` into
+`icons/previews/`. Treat the result as a draft and refine it in Icon Composer.
+
+---
+
 <p align="center">
   <h2 align="center">React Native Change Icon</h2>
   <h4 align="center">Programmatically change the application icon.</h4>
