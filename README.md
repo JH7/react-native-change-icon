@@ -42,6 +42,10 @@ Files per icon id in `iconsDir`:
   `getIcon()` returns the active name unchanged; since 7.0 iOS no longer adds an `icon-` prefix,
   so devices still on a legacy `icon-<id>` report that name and are switched by the next
   `changeIcon("<id>")`.
+- `aliases` (iOS only, e.g. `{ id: "eng", label: "…", aliases: ["icon-eng"] }`) registers the same
+  icon under additional names. iOS keeps the alternate icon by name across updates and falls back
+  to the primary icon when the new build lacks that name; with an alias for the name older builds
+  set, the icon stays correct after the update until the app switches to the id.
 
 ### Drafting icons from a flat logo
 
